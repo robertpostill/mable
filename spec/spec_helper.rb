@@ -21,6 +21,9 @@ end
 require 'money'
 require 'simplecov'
 
+Money.default_currency = Money::Currency.new('AUD')
+Money.rounding_mode = BigDecimal::ROUND_HALF_UP
+
 require_relative '../lib/errors'
 require_relative '../lib/account'
 require_relative '../lib/transfer'

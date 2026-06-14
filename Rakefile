@@ -12,8 +12,7 @@ BALANCES_FILE  = ENV.fetch('BALANCES_FILE',  'mable_account_balances.csv')
 TRANSFERS_FILE = ENV.fetch('TRANSFERS_FILE', 'mable_transactions.csv')
 
 def require_app
-  require 'bigdecimal'
-  require 'bigdecimal/util'
+  require 'money'
   require_relative 'lib/errors'
   require_relative 'lib/account'
   require_relative 'lib/transfer'
