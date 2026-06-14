@@ -7,6 +7,14 @@ require 'stringio'
 RSpec.describe BankingService do
   subject(:service) { described_class.new }
 
+  let(:output) { StringIO.new }
+  let(:logger) do
+    Logger.new(output).tap do |log|
+      log.formatter = proc { |_severity, _datetime, _progname, msg| "#{msg}\n" }
+    end
+  end
+  let(:service_with_logger) { described_class.new(logger: logger) }
+
   let(:balances_csv) do
     t = Tempfile.new(['balances', '.csv'])
     t.write(<<~CSV)
@@ -81,14 +89,10 @@ RSpec.describe BankingService do
 
   describe '#run' do
     it 'outputs a summary without raising any errors' do
-      output = StringIO.new
-      logger = Logger.new(output)
-      logger.formatter = proc { |_severity, _datetime, _progname, msg| "#{msg}\n" }
-      service = described_class.new(logger: logger)
-      service.load_accounts(balances_csv.path)
+      service_with_logger.load_accounts(balances_csv.path)
 
       expect do
-        service.run(
+        service_with_logger.run(
           balances_file: balances_csv.path,
           transfers_file: transfers_csv.path
         )
@@ -96,12 +100,7 @@ RSpec.describe BankingService do
     end
 
     it 'reports all transfers as succeeded in the sample data' do
-      output = StringIO.new
-      logger = Logger.new(output)
-      logger.formatter = proc { |_severity, _datetime, _progname, msg| "#{msg}\n" }
-      service = described_class.new(logger: logger)
-
-      service.run(
+      service_with_logger.run(
         balances_file: balances_csv.path,
         transfers_file: transfers_csv.path
       )
