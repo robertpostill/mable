@@ -13,6 +13,8 @@ TRANSFERS_FILE = ENV.fetch('TRANSFERS_FILE', 'mable_transactions.csv')
 
 def require_app
   require 'money'
+  Money.default_currency = Money::Currency.new('AUD')
+  Money.rounding_mode = BigDecimal::ROUND_HALF_UP
   require_relative 'lib/errors'
   require_relative 'lib/account'
   require_relative 'lib/transfer'
