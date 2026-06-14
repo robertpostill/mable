@@ -1,5 +1,6 @@
 require "rake"
 require "rspec/core/rake_task"
+require "rubocop/rake_task"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -46,6 +47,18 @@ task :coverage do
 end
 
 # ---------------------------------------------------------------------------
+# rubocop — lint and style checking
+# ---------------------------------------------------------------------------
+
+RuboCop::RakeTask.new(:rubocop) do |t|
+  t.options = ["--display-cop-names", "--color"]
+end
+
+RuboCop::RakeTask.new("rubocop:auto_correct") do |t|
+  t.options = ["--autocorrect", "--color"]
+end
+
+# ---------------------------------------------------------------------------
 # run — execute the banking service against CSV files
 # ---------------------------------------------------------------------------
 
@@ -54,12 +67,12 @@ task :run do
   require_app
   BankingService.new.run(
     balances_file:  BALANCES_FILE,
-    transfers_file: TRANSFERS_FILE
+    transfers_file: TRANSFERS_FILE,
   )
 end
 
 # ---------------------------------------------------------------------------
-# lint — basic Ruby syntax check across all lib files
+# lint — Ruby syntax check across all lib files
 # ---------------------------------------------------------------------------
 
 desc "Check Ruby syntax for all files in lib/"
@@ -90,11 +103,11 @@ task :clean do
 end
 
 # ---------------------------------------------------------------------------
-# ci — full pipeline: lint → coverage → run
+# ci — full pipeline: lint → rubocop → coverage → run
 # ---------------------------------------------------------------------------
 
-desc "Full CI pipeline: lint, tests with coverage, then run"
-task ci: %i[lint coverage run]
+desc "Full CI pipeline: lint, rubocop, tests with coverage, then run"
+task ci: %i[lint rubocop coverage run]
 
 # ---------------------------------------------------------------------------
 # help (mirrors `rake -T` but friendlier)
@@ -108,7 +121,7 @@ task :help do
   Rake::Task.tasks.each do |t|
     next if t.comment.nil? || t.comment.empty?
 
-    printf "  %-20s %s\n", "rake #{t.name}", t.comment
+    printf "  %-30s %s\n", "rake #{t.name}", t.comment
   end
   puts
   puts "Environment variables:"
