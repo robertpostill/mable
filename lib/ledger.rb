@@ -19,7 +19,7 @@ class Ledger
   def process_transfer(transfer)
     from = find_account(transfer.from_account_number)
     to   = find_account(transfer.to_account_number)
-    amount = BigDecimal(transfer.amount.to_s)
+    amount = transfer.amount
 
     raise InvalidTransferError, 'Transfer amount must be positive' unless amount.positive?
 

@@ -8,7 +8,7 @@ class InsufficientFundsError < StandardError
     super(
       "Account #{account.number} has insufficient funds " \
       "(balance: #{account.formatted_balance}, " \
-      "requested: #{format('$%.2f', amount)})"
+      "requested: #{format('$%.2f', amount.to_d)})"
     )
   end
 end

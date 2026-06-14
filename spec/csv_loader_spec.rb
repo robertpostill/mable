@@ -36,8 +36,8 @@ RSpec.describe CsvLoader do
       expect(accounts.map(&:number)).to eq(%w[1111234522226789 1111234522221234 2222123433331212])
     end
 
-    it 'parses balances as BigDecimals' do
-      expect(accounts.first.balance).to eq(BigDecimal('5000.00'))
+    it 'parses balances as Money objects' do
+      expect(accounts.first.balance).to eq(Money.from_amount(5000))
     end
 
     it 'raises an error when the file does not exist' do
@@ -99,8 +99,8 @@ RSpec.describe CsvLoader do
       expect(transfers.first.to_account_number).to eq('1212343433335665')
     end
 
-    it 'parses the amount as a BigDecimal' do
-      expect(transfers.first.amount).to eq(BigDecimal('500.00'))
+    it 'parses the amount as a Money object' do
+      expect(transfers.first.amount).to eq(Money.from_amount(500))
     end
   end
 end

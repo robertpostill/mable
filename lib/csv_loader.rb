@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'csv'
-require 'bigdecimal'
+require 'money'
 
 # Responsible for parsing CSV files into domain objects in batches.
 class CsvLoader
@@ -41,12 +41,12 @@ class CsvLoader
   def parse_account(row)
     raise "Invalid account row: #{row.inspect}" unless row.length >= 2
 
-    Account.new(row[0].strip, BigDecimal(row[1].strip))
+    Account.new(row[0].strip, Money.from_amount(row[1].strip.to_r))
   end
 
   def parse_transfer(row)
     raise "Invalid transfer row: #{row.inspect}" unless row.length >= 3
 
-    Transfer.new(row[0].strip, row[1].strip, BigDecimal(row[2].strip))
+    Transfer.new(row[0].strip, row[1].strip, Money.from_amount(row[2].strip.to_r))
   end
 end

@@ -6,7 +6,7 @@ class Account
 
   def initialize(number, balance)
     @number  = number.to_s
-    @balance = BigDecimal(balance.to_s)
+    @balance = balance.is_a?(Money) ? balance : Money.from_amount(balance.to_s.to_r)
   end
 
   def debit(amount)
@@ -28,6 +28,6 @@ class Account
   end
 
   def formatted_balance
-    format('$%.2f', balance)
+    format('$%.2f', balance.to_d)
   end
 end

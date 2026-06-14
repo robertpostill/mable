@@ -7,7 +7,7 @@ RSpec.describe Ledger do
 
   let(:sender)    { Account.new('1111234522226789', '5000.00') }
   let(:recipient) { Account.new('1212343433335665', '1200.00') }
-  let(:transfer)  { Transfer.new(sender.number, recipient.number, BigDecimal('500.00')) }
+  let(:transfer)  { Transfer.new(sender.number, recipient.number, Money.from_amount(500)) }
 
   before do
     ledger.add_account(sender)
@@ -34,17 +34,17 @@ RSpec.describe Ledger do
 
       it "debits the sender's account" do
         ledger.process_transfer(transfer)
-        expect(sender.balance).to eq(BigDecimal('4500.00'))
+        expect(sender.balance).to eq(Money.from_amount(4500))
       end
 
       it "credits the recipient's account" do
         ledger.process_transfer(transfer)
-        expect(recipient.balance).to eq(BigDecimal('1700.00'))
+        expect(recipient.balance).to eq(Money.from_amount(1700))
       end
     end
 
     context 'when the sender has insufficient funds' do
-      let(:transfer) { Transfer.new(sender.number, recipient.number, BigDecimal('9999.00')) }
+      let(:transfer) { Transfer.new(sender.number, recipient.number, Money.from_amount(9999)) }
 
       it 'returns a failed TransferResult' do
         result = ledger.process_transfer(transfer)
@@ -58,17 +58,17 @@ RSpec.describe Ledger do
 
       it 'leaves the sender balance unchanged' do
         ledger.process_transfer(transfer)
-        expect(sender.balance).to eq(BigDecimal('5000.00'))
+        expect(sender.balance).to eq(Money.from_amount(5000))
       end
 
       it 'leaves the recipient balance unchanged' do
         ledger.process_transfer(transfer)
-        expect(recipient.balance).to eq(BigDecimal('1200.00'))
+        expect(recipient.balance).to eq(Money.from_amount(1200))
       end
     end
 
     context 'when the sender account is unknown' do
-      let(:transfer) { Transfer.new('0000000000000000', recipient.number, BigDecimal('10.00')) }
+      let(:transfer) { Transfer.new('0000000000000000', recipient.number, Money.from_amount(10)) }
 
       it 'returns a failed TransferResult' do
         result = ledger.process_transfer(transfer)
@@ -82,7 +82,7 @@ RSpec.describe Ledger do
     end
 
     context 'when the recipient account is unknown' do
-      let(:transfer) { Transfer.new(sender.number, '0000000000000000', BigDecimal('10.00')) }
+      let(:transfer) { Transfer.new(sender.number, '0000000000000000', Money.from_amount(10)) }
 
       it 'returns a failed TransferResult' do
         result = ledger.process_transfer(transfer)
@@ -91,7 +91,7 @@ RSpec.describe Ledger do
     end
 
     context 'when the transfer amount is not positive' do
-      let(:transfer) { Transfer.new(sender.number, recipient.number, BigDecimal('0')) }
+      let(:transfer) { Transfer.new(sender.number, recipient.number, Money.from_amount(0)) }
 
       it 'returns a failed TransferResult' do
         result = ledger.process_transfer(transfer)
@@ -103,8 +103,8 @@ RSpec.describe Ledger do
   describe '#process_transfers' do
     let(:transfers) do
       [
-        Transfer.new(sender.number, recipient.number, BigDecimal('500.00')),
-        Transfer.new(sender.number, recipient.number, BigDecimal('200.00'))
+        Transfer.new(sender.number, recipient.number, Money.from_amount(500)),
+        Transfer.new(sender.number, recipient.number, Money.from_amount(200))
       ]
     end
 
@@ -115,18 +115,18 @@ RSpec.describe Ledger do
 
     it 'debits the sender cumulatively across successful transfers' do
       ledger.process_transfers(transfers)
-      expect(sender.balance).to eq(BigDecimal('4300.00'))
+      expect(sender.balance).to eq(Money.from_amount(4300))
     end
 
     it 'credits the recipient cumulatively across successful transfers' do
       ledger.process_transfers(transfers)
-      expect(recipient.balance).to eq(BigDecimal('1900.00'))
+      expect(recipient.balance).to eq(Money.from_amount(1900))
     end
 
     context 'when one transfer in the batch fails' do
       let(:results) do
-        over_limit = Transfer.new(sender.number, recipient.number, BigDecimal('99999.00'))
-        valid = Transfer.new(sender.number, recipient.number, BigDecimal('100.00'))
+        over_limit = Transfer.new(sender.number, recipient.number, Money.from_amount(99_999))
+        valid = Transfer.new(sender.number, recipient.number, Money.from_amount(100))
         ledger.process_transfers([over_limit, valid])
       end
 

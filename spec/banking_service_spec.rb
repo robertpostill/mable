@@ -3,6 +3,7 @@
 require_relative 'spec_helper'
 require 'tempfile'
 require 'stringio'
+require 'money'
 
 RSpec.describe BankingService do
   subject(:service) { described_class.new }
@@ -59,21 +60,21 @@ RSpec.describe BankingService do
       # Starts at 5000.00, sends 500.00, receives 320.50 → 4820.50
       service.process_transfers(transfers_csv.path)
       balance = service.ledger.find_account('1111234522226789').balance
-      expect(balance).to eq(BigDecimal('4820.50'))
+      expect(balance).to eq(Money.from_amount('4820.50'.to_r))
     end
 
     it 'produces the expected final balance for account 3212343433335755' do
       # Starts at 50000.00, sends 1000.00 and 320.50 → 48679.50
       service.process_transfers(transfers_csv.path)
       balance = service.ledger.find_account('3212343433335755').balance
-      expect(balance).to eq(BigDecimal('48679.50'))
+      expect(balance).to eq(Money.from_amount('48679.50'.to_r))
     end
 
     it 'produces the expected final balance for account 1212343433335665' do
       # Starts at 1200.00, receives 500.00 and 25.60 → 1725.60
       service.process_transfers(transfers_csv.path)
       balance = service.ledger.find_account('1212343433335665').balance
-      expect(balance).to eq(BigDecimal('1725.60'))
+      expect(balance).to eq(Money.from_amount('1725.60'.to_r))
     end
   end
 
@@ -133,12 +134,12 @@ RSpec.describe BankingService do
 
     it 'does not change the sender balance' do
       service.process_transfers(overdraft_transfers_csv.path)
-      expect(service.ledger.find_account('1111234522226789').balance).to eq(BigDecimal('5000.00'))
+      expect(service.ledger.find_account('1111234522226789').balance).to eq(Money.from_amount(5000))
     end
 
     it 'does not change the recipient balance' do
       service.process_transfers(overdraft_transfers_csv.path)
-      expect(service.ledger.find_account('1212343433335665').balance).to eq(BigDecimal('1200.00'))
+      expect(service.ledger.find_account('1212343433335665').balance).to eq(Money.from_amount(1200))
     end
   end
 end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require 'bigdecimal'
-require 'bigdecimal/util'
+require 'money'
 
 require_relative 'lib/errors'
 require_relative 'lib/account'

@@ -18,8 +18,7 @@ if ENV['COVERAGE']
   end
 end
 
-require 'bigdecimal'
-require 'bigdecimal/util'
+require 'money'
 require 'simplecov'
 
 require_relative '../lib/errors'

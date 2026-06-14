@@ -10,58 +10,58 @@ RSpec.describe Account do
       expect(account.number).to eq('1111234522226789')
     end
 
-    it 'stores the balance as a BigDecimal' do
-      expect(account.balance).to be_a(BigDecimal)
+    it 'stores the balance as a Money object' do
+      expect(account.balance).to be_a(Money)
     end
 
     it 'stores the correct balance value' do
-      expect(account.balance).to eq(BigDecimal('5000.00'))
+      expect(account.balance).to eq(Money.from_amount(5000))
     end
   end
 
   describe '#debit' do
     it 'reduces the balance by the given amount' do
-      account.debit(BigDecimal('500.00'))
-      expect(account.balance).to eq(BigDecimal('4500.00'))
+      account.debit(Money.from_amount(500))
+      expect(account.balance).to eq(Money.from_amount(4500))
     end
 
     it 'allows debiting the full balance (draining to zero)' do
-      account.debit(BigDecimal('5000.00'))
-      expect(account.balance).to eq(BigDecimal('0'))
+      account.debit(Money.from_amount(5000))
+      expect(account.balance).to eq(Money.from_amount(0))
     end
 
     it 'raises InsufficientFundsError when the amount exceeds the balance' do
-      expect { account.debit(BigDecimal('5000.01')) }
+      expect { account.debit(Money.from_amount('5000.01'.to_r)) }
         .to raise_error(InsufficientFundsError)
     end
 
     it 'does not modify the balance when the debit is rejected' do
-      account.debit(BigDecimal('5000.01'))
+      account.debit(Money.from_amount('5000.01'.to_r))
     rescue StandardError
       nil
     ensure
-      expect(account.balance).to eq(BigDecimal('5000.00'))
+      expect(account.balance).to eq(Money.from_amount(5000))
     end
   end
 
   describe '#credit' do
     it 'increases the balance by the given amount' do
-      account.credit(BigDecimal('250.00'))
-      expect(account.balance).to eq(BigDecimal('5250.00'))
+      account.credit(Money.from_amount(250))
+      expect(account.balance).to eq(Money.from_amount(5250))
     end
   end
 
   describe '#sufficient_funds?' do
     it 'returns true when balance covers the amount exactly' do
-      expect(account.sufficient_funds?(BigDecimal('5000.00'))).to be true
+      expect(account.sufficient_funds?(Money.from_amount(5000))).to be true
     end
 
     it 'returns true when balance exceeds the amount' do
-      expect(account.sufficient_funds?(BigDecimal('1.00'))).to be true
+      expect(account.sufficient_funds?(Money.from_amount(1))).to be true
     end
 
     it 'returns false when balance is less than the amount' do
-      expect(account.sufficient_funds?(BigDecimal('5000.01'))).to be false
+      expect(account.sufficient_funds?(Money.from_amount('5000.01'.to_r))).to be false
     end
   end
 

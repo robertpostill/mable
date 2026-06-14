@@ -2,9 +2,9 @@
 
 source 'https://rubygems.org'
 
-gem 'bigdecimal', '~>4.1'
 gem 'csv', '~> 3.3'
 gem 'logger', '~> 1.7'
+gem 'money', '~> 6.19'
 gem 'rake', '~> 13.0'
 
 group :test do
