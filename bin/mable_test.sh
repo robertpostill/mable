@@ -3,8 +3,9 @@ set -euo pipefail
 
 # ---------------------------------------------------------------------------
 # Mable Banking Service — runner script
-# Usage: ./bin/mable_test.sh [balances_csv] [transfers_csv]
+# Usage: bin/mable_test.sh [balances_csv] [transfers_csv]
 # Defaults to the sample files included in the project.
+# Run from the project root, or from anywhere (script resolves its own root).
 # ---------------------------------------------------------------------------
 
 BALANCES_FILE="${1:-mable_account_balances.csv}"
@@ -13,16 +14,25 @@ TRANSFERS_FILE="${2:-mable_transactions.csv}"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # no colour
+CYAN='\033[0;36m'
+NC='\033[0m'
 
 info()    { echo -e "${GREEN}[INFO]${NC}  $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 error()   { echo -e "${RED}[ERROR]${NC} $*" >&2; }
+section() { echo -e "\n${CYAN}==== $* ====${NC}"; }
+
+# ---------------------------------------------------------------------------
+# Resolve project root (the directory above bin/)
+# ---------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+cd "${PROJECT_ROOT}"
 
 # ---------------------------------------------------------------------------
 # 1. Check Ruby is installed
 # ---------------------------------------------------------------------------
-info "Checking Ruby installation..."
+section "Ruby"
 
 if ! command -v ruby &>/dev/null; then
   error "Ruby is not installed or not on your PATH."
@@ -39,30 +49,28 @@ fi
 RUBY_VERSION="$(ruby --version)"
 info "Found: ${RUBY_VERSION}"
 
-# Warn if below minimum recommended version (3.0)
 RUBY_MAJOR="$(ruby -e 'print RUBY_VERSION.split(".")[0].to_i')"
-RUBY_MINOR="$(ruby -e 'print RUBY_VERSION.split(".")[1].to_i')"
 if [[ "$RUBY_MAJOR" -lt 3 ]]; then
   warn "Ruby 3.0+ is recommended (you have ${RUBY_VERSION})."
 fi
 
 # ---------------------------------------------------------------------------
-# 2. Check Bundler and install gems
+# 2. Check Bundler and install gems (includes simplecov + rake)
 # ---------------------------------------------------------------------------
-info "Checking Bundler..."
+section "Dependencies"
 
 if ! command -v bundle &>/dev/null; then
   warn "Bundler not found — installing..."
   gem install bundler --no-document
 fi
 
-info "Installing gems via Bundler..."
+info "Installing gems..."
 bundle install --quiet
 
 # ---------------------------------------------------------------------------
 # 3. Validate input files
 # ---------------------------------------------------------------------------
-info "Validating input files..."
+section "Input Files"
 
 missing=0
 for f in "$BALANCES_FILE" "$TRANSFERS_FILE"; do
@@ -82,12 +90,10 @@ info "Balances file:  ${BALANCES_FILE}"
 info "Transfers file: ${TRANSFERS_FILE}"
 
 # ---------------------------------------------------------------------------
-# 4. Run the program
+# 4. Run the project
 # ---------------------------------------------------------------------------
-echo
-info "Running Mable Banking Service..."
-echo "============================================================"
-ruby mable.rb "$BALANCES_FILE" "$TRANSFERS_FILE"
-echo "============================================================"
+section "Executing"
 
-info "Done."
+BALANCES_FILE="$BALANCES_FILE" TRANSFERS_FILE="$TRANSFERS_FILE" bundle exec rake run
+
+section "Done"
