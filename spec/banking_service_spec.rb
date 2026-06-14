@@ -82,21 +82,28 @@ RSpec.describe BankingService do
   describe '#run' do
     it 'outputs a summary without raising any errors' do
       output = StringIO.new
+      logger = Logger.new(output)
+      logger.formatter = proc { |_severity, _datetime, _progname, msg| "#{msg}\n" }
+      service = described_class.new(logger: logger)
+      service.load_accounts(balances_csv.path)
+
       expect do
         service.run(
           balances_file: balances_csv.path,
-          transfers_file: transfers_csv.path,
-          output: output
+          transfers_file: transfers_csv.path
         )
       end.not_to raise_error
     end
 
     it 'reports all transfers as succeeded in the sample data' do
       output = StringIO.new
+      logger = Logger.new(output)
+      logger.formatter = proc { |_severity, _datetime, _progname, msg| "#{msg}\n" }
+      service = described_class.new(logger: logger)
+
       service.run(
         balances_file: balances_csv.path,
-        transfers_file: transfers_csv.path,
-        output: output
+        transfers_file: transfers_csv.path
       )
       expect(output.string).to include('4 succeeded, 0 failed')
     end

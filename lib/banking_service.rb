@@ -1,11 +1,17 @@
 # frozen_string_literal: true
 
+require 'logger'
+
 # Top-level service that wires loading, ledger management and reporting together.
 class BankingService
-  attr_reader :ledger
+  attr_reader :ledger, :logger
 
-  def initialize
+  def initialize(logger: Logger.new($stdout))
     @ledger = Ledger.new
+    @logger = logger
+    @logger.formatter = proc do |_severity, _datetime, _progname, msg|
+      "#{msg}\n"
+    end
   end
 
   def load_accounts(file_path)
@@ -19,33 +25,33 @@ class BankingService
     @ledger.process_transfers(transfers)
   end
 
-  def run(balances_file:, transfers_file:, output: $stdout)
-    output.puts "Loading account balances from: #{balances_file}"
+  def run(balances_file:, transfers_file:)
+    logger.info "Loading account balances from: #{balances_file}"
     load_accounts(balances_file)
-    output.puts '=== Initial Account Balances ==='
+    logger.info '=== Initial Account Balances ==='
     ledger.accounts.each_value do |account|
-      output.puts "  #{account.number}  #{account.formatted_balance}"
+      logger.info "  #{account.number}  #{account.formatted_balance}"
     end
-    output.puts "Loaded #{ledger.accounts.size} accounts.\n\n"
+    logger.info "Loaded #{ledger.accounts.size} accounts.\n\n"
 
-    output.puts "Processing transfers from: #{transfers_file}"
+    logger.info "Processing transfers from: #{transfers_file}"
     results = process_transfers(transfers_file)
-    output.puts
+    logger.info ''
 
-    report(results, output: output)
+    report(results)
   end
 
-  def report(results, output: $stdout)
-    output.puts '=== Transfer Results ==='
-    results.each { |r| output.puts "  #{r}" }
+  def report(results)
+    logger.info '=== Transfer Results ==='
+    results.each { |r| logger.info "  #{r}" }
 
     successes = results.count(&:success?)
     failures  = results.count(&:failure?)
-    output.puts "\n#{successes} succeeded, #{failures} failed.\n\n"
+    logger.info "\n#{successes} succeeded, #{failures} failed.\n\n"
 
-    output.puts '=== Final Account Balances ==='
+    logger.info '=== Final Account Balances ==='
     ledger.accounts.each_value do |account|
-      output.puts "  #{account.number}  #{account.formatted_balance}"
+      logger.info "  #{account.number}  #{account.formatted_balance}"
     end
   end
 end
