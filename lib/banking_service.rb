@@ -15,14 +15,17 @@ class BankingService
   end
 
   def load_accounts(file_path)
-    accounts = CsvLoader.load_accounts(file_path)
-    accounts.each { |account| @ledger.add_account(account) }
-    accounts
+    CsvLoader.load_accounts(file_path) do |batch|
+      batch.each { |account| @ledger.add_account(account) }
+    end
   end
 
   def process_transfers(file_path)
-    transfers = CsvLoader.load_transfers(file_path)
-    @ledger.process_transfers(transfers)
+    results = []
+    CsvLoader.load_transfers(file_path) do |batch|
+      results.concat(@ledger.process_transfers(batch))
+    end
+    results
   end
 
   def run(balances_file:, transfers_file:)
