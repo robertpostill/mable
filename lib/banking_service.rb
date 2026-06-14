@@ -20,6 +20,10 @@ class BankingService
   def run(balances_file:, transfers_file:, output: $stdout)
     output.puts "Loading account balances from: #{balances_file}"
     load_accounts(balances_file)
+    output.puts '=== Initial Account Balances ==='
+    ledger.accounts.each_value do |account|
+      output.puts "  #{account.number}  #{account.formatted_balance}"
+    end
     output.puts "Loaded #{ledger.accounts.size} accounts.\n\n"
 
     output.puts "Processing transfers from: #{transfers_file}"
