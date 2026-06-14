@@ -10,8 +10,11 @@ RSpec.describe Account do
       expect(account.number).to eq('1111234522226789')
     end
 
-    it 'stores the balance as a BigDecimal for precision' do
+    it 'stores the balance as a BigDecimal' do
       expect(account.balance).to be_a(BigDecimal)
+    end
+
+    it 'stores the correct balance value' do
       expect(account.balance).to eq(BigDecimal('5000.00'))
     end
   end
@@ -33,11 +36,10 @@ RSpec.describe Account do
     end
 
     it 'does not modify the balance when the debit is rejected' do
-      begin
-        account.debit(BigDecimal('5000.01'))
-      rescue StandardError
-        nil
-      end
+      account.debit(BigDecimal('5000.01'))
+    rescue StandardError
+      nil
+    ensure
       expect(account.balance).to eq(BigDecimal('5000.00'))
     end
   end

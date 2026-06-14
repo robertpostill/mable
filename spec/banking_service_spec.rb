@@ -7,14 +7,6 @@ require 'stringio'
 RSpec.describe BankingService do
   subject(:service) { described_class.new }
 
-  let(:output) { StringIO.new }
-  let(:logger) do
-    Logger.new(output).tap do |log|
-      log.formatter = proc { |_severity, _datetime, _progname, msg| "#{msg}\n" }
-    end
-  end
-  let(:service_with_logger) { described_class.new(logger: logger) }
-
   let(:balances_csv) do
     t = Tempfile.new(['balances', '.csv'])
     t.write(<<~CSV)
@@ -28,22 +20,7 @@ RSpec.describe BankingService do
     t
   end
 
-  let(:transfers_csv) do
-    t = Tempfile.new(['transfers', '.csv'])
-    t.write(<<~CSV)
-      1111234522226789,1212343433335665,500.00
-      3212343433335755,2222123433331212,1000.00
-      3212343433335755,1111234522226789,320.50
-      1111234522221234,1212343433335665,25.60
-    CSV
-    t.flush
-    t
-  end
-
-  after do
-    balances_csv.close!
-    transfers_csv.close!
-  end
+  after { balances_csv.close! }
 
   describe '#load_accounts' do
     it 'populates the ledger with all accounts from the CSV' do
@@ -53,6 +30,19 @@ RSpec.describe BankingService do
   end
 
   describe '#process_transfers' do
+    let(:transfers_csv) do
+      t = Tempfile.new(['transfers', '.csv'])
+      t.write(<<~CSV)
+        1111234522226789,1212343433335665,500.00
+        3212343433335755,2222123433331212,1000.00
+        3212343433335755,1111234522226789,320.50
+        1111234522221234,1212343433335665,25.60
+      CSV
+      t.flush
+      t
+    end
+
+    after { transfers_csv.close! }
     before { service.load_accounts(balances_csv.path) }
 
     it 'returns a result for every transfer in the file' do
@@ -88,14 +78,30 @@ RSpec.describe BankingService do
   end
 
   describe '#run' do
-    it 'outputs a summary without raising any errors' do
-      service_with_logger.load_accounts(balances_csv.path)
+    let(:transfers_csv) do
+      t = Tempfile.new(['transfers', '.csv'])
+      t.write(<<~CSV)
+        1111234522226789,1212343433335665,500.00
+        3212343433335755,2222123433331212,1000.00
+        3212343433335755,1111234522226789,320.50
+        1111234522221234,1212343433335665,25.60
+      CSV
+      t.flush
+      t
+    end
+    let(:output) { StringIO.new }
+    let(:logger) do
+      Logger.new(output).tap do |log|
+        log.formatter = proc { |_severity, _datetime, _progname, msg| "#{msg}\n" }
+      end
+    end
+    let(:service_with_logger) { described_class.new(logger: logger) }
 
+    after { transfers_csv.close! }
+
+    it 'outputs a summary without raising any errors' do
       expect do
-        service_with_logger.run(
-          balances_file: balances_csv.path,
-          transfers_file: transfers_csv.path
-        )
+        service_with_logger.run(balances_file: balances_csv.path, transfers_file: transfers_csv.path)
       end.not_to raise_error
     end
 
@@ -125,9 +131,13 @@ RSpec.describe BankingService do
       expect(results.first).to be_failure
     end
 
-    it 'does not change any account balances' do
+    it 'does not change the sender balance' do
       service.process_transfers(overdraft_transfers_csv.path)
       expect(service.ledger.find_account('1111234522226789').balance).to eq(BigDecimal('5000.00'))
+    end
+
+    it 'does not change the recipient balance' do
+      service.process_transfers(overdraft_transfers_csv.path)
       expect(service.ledger.find_account('1212343433335665').balance).to eq(BigDecimal('1200.00'))
     end
   end

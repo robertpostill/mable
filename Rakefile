@@ -123,7 +123,7 @@ task :help do
   Rake::Task.tasks.each do |t|
     next if t.comment.nil? || t.comment.empty?
 
-    printf "  %-30s %s\n", "rake #{t.name}", t.comment
+    puts "  #{"rake #{t.name}".ljust(30)} #{t.comment}"
   end
   puts
   puts 'Environment variables:'

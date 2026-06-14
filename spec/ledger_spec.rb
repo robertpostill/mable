@@ -113,20 +113,30 @@ RSpec.describe Ledger do
       expect(results.size).to eq(2)
     end
 
-    it 'applies all successful transfers cumulatively' do
+    it 'debits the sender cumulatively across successful transfers' do
       ledger.process_transfers(transfers)
       expect(sender.balance).to eq(BigDecimal('4300.00'))
+    end
+
+    it 'credits the recipient cumulatively across successful transfers' do
+      ledger.process_transfers(transfers)
       expect(recipient.balance).to eq(BigDecimal('1900.00'))
     end
 
-    it 'continues processing subsequent transfers after one fails' do
-      over_limit = Transfer.new(sender.number, recipient.number, BigDecimal('99999.00'))
-      valid      = Transfer.new(sender.number, recipient.number, BigDecimal('100.00'))
+    context 'when one transfer in the batch fails' do
+      let(:results) do
+        over_limit = Transfer.new(sender.number, recipient.number, BigDecimal('99999.00'))
+        valid = Transfer.new(sender.number, recipient.number, BigDecimal('100.00'))
+        ledger.process_transfers([over_limit, valid])
+      end
 
-      results = ledger.process_transfers([over_limit, valid])
+      it 'marks the over-limit transfer as failed' do
+        expect(results[0]).to be_failure
+      end
 
-      expect(results[0]).to be_failure
-      expect(results[1]).to be_success
+      it 'continues to process the following transfer' do
+        expect(results[1]).to be_success
+      end
     end
   end
 end

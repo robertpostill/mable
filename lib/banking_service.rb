@@ -28,10 +28,7 @@ class BankingService
   def run(balances_file:, transfers_file:)
     logger.info "Loading account balances from: #{balances_file}"
     load_accounts(balances_file)
-    logger.info '=== Initial Account Balances ==='
-    ledger.accounts.each_value do |account|
-      logger.info "  #{account.number}  #{account.formatted_balance}"
-    end
+    log_balances('Initial Account Balances')
     logger.info "Loaded #{ledger.accounts.size} accounts.\n\n"
 
     logger.info "Processing transfers from: #{transfers_file}"
@@ -49,7 +46,13 @@ class BankingService
     failures  = results.count(&:failure?)
     logger.info "\n#{successes} succeeded, #{failures} failed.\n\n"
 
-    logger.info '=== Final Account Balances ==='
+    log_balances('Final Account Balances')
+  end
+
+  private
+
+  def log_balances(header)
+    logger.info "=== #{header} ==="
     ledger.accounts.each_value do |account|
       logger.info "  #{account.number}  #{account.formatted_balance}"
     end
