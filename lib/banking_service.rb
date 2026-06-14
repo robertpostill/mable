@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Top-level service that wires loading, ledger management and reporting together.
 class BankingService
   attr_reader :ledger

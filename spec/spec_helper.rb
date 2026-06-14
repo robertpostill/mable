@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 if ENV['COVERAGE']
   require 'simplecov'
 
   SimpleCov.start do
     add_filter '/spec/'
 
-    add_group 'Account',  'lib/account'
+    add_group 'Account', 'lib/account'
     add_group 'Transfers', 'lib/transfer'
-    add_group 'Core',    'lib/ledger'
+    add_group 'Core', 'lib/ledger'
     add_group 'Error', 'lib/errors'
     add_group 'IO',      'lib/csv_loader'
     add_group 'Service', 'lib/banking_service'

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Holds all accounts for a company and processes batches of transfers.
 class Ledger
   attr_reader :accounts
@@ -19,7 +21,7 @@ class Ledger
     to   = find_account(transfer.to_account_number)
     amount = BigDecimal(transfer.amount.to_s)
 
-    raise InvalidTransferError, 'Transfer amount must be positive' unless amount > 0
+    raise InvalidTransferError, 'Transfer amount must be positive' unless amount.positive?
 
     from.debit(amount)
     to.credit(amount)

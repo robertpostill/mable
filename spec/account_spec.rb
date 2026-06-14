@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require_relative 'spec_helper'
 
 RSpec.describe Account do
-  subject(:account) { Account.new('1111234522226789', '5000.00') }
+  subject(:account) { described_class.new('1111234522226789', '5000.00') }
 
   describe '#initialize' do
     it 'stores the account number as a string' do

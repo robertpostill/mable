@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require_relative 'spec_helper'
 require 'tempfile'
 require 'stringio'
 
 RSpec.describe BankingService do
-  subject(:service) { BankingService.new }
+  subject(:service) { described_class.new }
 
   let(:balances_csv) do
     t = Tempfile.new(['balances', '.csv'])

@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require_relative 'spec_helper'
 
 RSpec.describe Ledger do
-  subject(:ledger) { Ledger.new }
+  subject(:ledger) { described_class.new }
 
   let(:sender)    { Account.new('1111234522226789', '5000.00') }
   let(:recipient) { Account.new('1212343433335665', '1200.00') }

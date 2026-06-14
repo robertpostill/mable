@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Records whether a transfer succeeded or failed, and why.
 TransferResult = Struct.new(:transfer, :success, :error_message) do
   def success?

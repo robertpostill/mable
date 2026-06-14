@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class InsufficientFundsError < StandardError
   def initialize(account, amount)
     super(

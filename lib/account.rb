@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Represents a single bank account identified by a 16-digit account number.
 class Account
   attr_reader :number, :balance
